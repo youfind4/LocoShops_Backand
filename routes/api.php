@@ -38,7 +38,7 @@ Route::get('settings', 'API\UserAPIController@settings');
 Route::resource('fields', 'API\FieldAPIController');
 Route::resource('categories', 'API\CategoryAPIController');
 Route::resource('markets', 'API\MarketAPIController');
-
+Route::get('paymentgateways','API\PaymentGatewaysAPIController@index');
 Route::resource('faq_categories', 'API\FaqCategoryAPIController');
 Route::get('products/categories', 'API\ProductAPIController@categories');
 Route::resource('products', 'API\ProductAPIController');
@@ -53,14 +53,53 @@ Route::resource('currencies', 'API\CurrencyAPIController');
 Route::resource('option_groups', 'API\OptionGroupAPIController');
 
 Route::resource('options', 'API\OptionAPIController');
+Route::get('manager_market_driv','API\Manager\ManagerAppDriversAPIController@market_driver');
+Route::get('manager_drivers_list','API\Manager\ManagerAppDriversAPIController@index');
+Route::post('manager_profile_update','API\Manager\ManagerAppUserProfileAPIController@update');
 
-// New Added by VPN AT :- 08/08/2020
+Route::post('manager_notification','API\OrderAPIController@sendPushNotification');
+Route::post('manager_notification_token','API\Manager\ManagerAppLoginManagerAPIController@notification_token');
+Route::post('manager_login','API\Manager\ManagerAppLoginManagerAPIController@login');
+Route::post('manager_signup','API\Manager\ManagerAppLoginManagerAPIController@register');
+Route::get('manager_drivers','API\Manager\ManagerAppMarketPayoutsAPIController@getdrivers');
+Route::get('manager_profile','API\Manager\ManagerAppUserProfileAPIController@index');
+Route::get('manager_orders_pending','API\Manager\ManagerAppOrdersAPIController@total_orders_pending');
+Route::get('manager_orders_recieved','API\Manager\ManagerAppOrdersAPIController@total_orders_recieved');
+Route::get('manager_orders_completed','API\Manager\ManagerAppOrdersAPIController@total_orders_completed');
 
-Route::post('paytm_get_token', 'API\PaytmGenerateTokenAPIController@get_token');
-
-// End VPN change AT :- 08/08/2020
-
-
+Route::get('manager_payments','API\Manager\ManagerAppMarketPayoutsAPIController@getPayments');
+Route::get('manager_galleries','API\Manager\ManagerAppGalleriesAPIController@index');
+Route::get('manager_market_reviews','API\Manager\ManagerAppMarketReviewsAPIController@index');
+Route::get('manager_markets','API\Manager\ManagerAppMarketsAPIController@index');
+Route::get('manager_faqs','API\Manager\ManagerAppFaqAPIController@index');
+Route::get('manager_favorites','API\Manager\ManagerAppFavoritesAPIController@index');
+Route::get('manager_order_status','API\Manager\ManagerAppOrdersStatusesAPIController@index');
+Route::get('manager_product_reviews','API\Manager\ManagerAppProductReviewsAPIController@index');
+Route::get('manager_product_options','API\Manager\ManagerAppProductOptionsAPIController@index');
+Route::get('manager_products','API\Manager\ManagerAppProductsAPIController@index');
+Route::post('manager_favorites_delete','API\Manager\ManagerAppFavoritesAPIController@delete');
+Route::post('manager_market_create','API\Manager\ManagerAppMarketsAPIController@create_market');
+Route::post('manager_market_update','API\Manager\ManagerAppMarketsAPIController@update');
+Route::post('manager_market_reviews_update','API\Manager\ManagerAppMarketReviewsAPIController@update');
+Route::post('manager_product_reviews_update','API\Manager\ManagerAppProductReviewsAPIController@update');
+Route::get('manager_userslist','API\Manager\ManagerAppMarketReviewsAPIController@fetchuserslist');
+Route::get('manager_market_list','API\Manager\ManagerAppMarketReviewsAPIController@fetchmarketslist');
+Route::post('manager_product_insert','API\Manager\ManagerAppProductsAPIController@insertproduct');
+Route::post('manager_option_group_insert','API\Manager\ManagerAppProductsAPIController@option_groups');
+Route::get('manager_categories','API\Manager\ManagerAppProductsAPIController@list_catageries');
+Route::get('manager_earnings','API\Manager\ManagerAppEarningsAPIController@index');
+Route::get('manager_market_payouts','API\Manager\ManagerAppMarketPayoutsAPIController@index');
+Route::post('manager_create_payout','API\Manager\ManagerAppMarketPayoutsAPIController@insert_payout');
+Route::get('manager_orders','API\Manager\ManagerAppOrdersAPIController@index');
+Route::post('manager_orders_delete','API\ManagerAppOrdersAPIController@delete');
+Route::post('manager_options_create','API\Manager\ManagerAppProductOptionsAPIController@create_option');
+Route::post('manager_options_update','API\Manager\ManagerAppProductOptionsAPIController@update');
+Route::post('manager_options_delete','API\Manager\ManagerAppProductOptionsAPIController@delete');
+Route::post('manager_order_status_update','API\Manager\ManagerAppOrdersAPIController@order_update');
+Route::post('manager_orders_delete','API\Manager\ManagerAppOrdersAPIController@delete');
+Route::post('manager_products_delete','API\Manager\ManagerAppProductsAPIController@delete');
+Route::post('manager_app_product_update','API\Manager\ManagerAppProductsAPIController@update_product');
+Route::post('manager_app_market_delete','API\Manager\ManagerAppMarketsAPIController@delete');
 
 Route::middleware('auth:api')->group(function () {
     Route::group(['middleware' => ['role:driver']], function () {
@@ -104,4 +143,6 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('carts', 'API\CartAPIController');
 
     Route::resource('delivery_addresses', 'API\DeliveryAddressAPIController');
+
+    
 });

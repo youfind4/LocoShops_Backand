@@ -32,7 +32,6 @@ use Prettus\Repository\Exceptions\RepositoryException;
 use Prettus\Validator\Exceptions\ValidatorException;
 use Stripe\Token;
 
-use DB;
 /**
  * Class OrderController
  * @package App\Http\Controllers\API
@@ -141,44 +140,6 @@ class OrderAPIController extends Controller
         }
     }
 
-  function sendPushNotification($fcm_token, $id = null) {  
-    
-        $your_project_id_as_key ='AAAA-yAUJPg:APA91bFMhVE2V_u1twiceha6kVv00WWn6FzZSIkUOCjkInnKK95RdvWz9pP-pYyHyIlPbN1dR1CmAWuyRqRaLdHcdOG6ocvoBToFIxshzRJ2HuHwHj9V65iCcaCVh9ZojNVEFNaJsiGZ';
-        $url = "https://fcm.googleapis.com/fcm/send";            
-        $header = [
-        'authorization: key=' . $your_project_id_as_key,
-            'content-type: application/json'
-        ];    
-
-        $postdata = '{
-            "to" : "' . $fcm_token . '",
-                "notification" : {
-                    "title": "New Order Placed",
-                    "text" : "New Order Placed Click to open"
-                },
-            "data" : {
-                "id" : "'.$id.'",
-                "title":"New Order Placed",
-                "description" :"New Order Placed Click to open",
-                "text" : "New Order Placed Click to open",
-                "is_read": 0
-              }
-        }';
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-
-        $result = curl_exec($ch);    
-        curl_close($ch);
-
-        return $result;
-    }
-
     /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse|mixed
@@ -211,12 +172,10 @@ class OrderAPIController extends Controller
                         $request->only('user_id', 'order_status_id', 'tax', 'delivery_address_id', 'delivery_fee', 'hint')
                     );
                 }
-                $product_id;
                 foreach ($input['products'] as $productOrder) {
                     $productOrder['order_id'] = $order->id;
                     $amount += $productOrder['price'] * $productOrder['quantity'];
                     $this->productOrderRepository->create($productOrder);
-                    $product_id = $productOrder['product_id'];
                 }
                 $amount += $order->delivery_fee;
                 $amountWithTax = $amount + ($amount * $order->tax / 100);
@@ -233,31 +192,14 @@ class OrderAPIController extends Controller
                 $this->cartRepository->deleteWhere(['user_id' => $order->user_id]);
 
                 Notification::send($order->productOrders[0]->product->market->users, new NewOrder($order));
-                
-
-       
-          $earnings = DB::table('device_acces_token')
-         ->leftjoin('user_markets','user_markets.user_id','=',
-         'device_acces_token.user_id')
-            ->leftjoin('products','products.market_id','=','user_markets.market_id')
-        ->select('device_acces_token.firbase_token')
-        ->where('products.id', '=', $product_id)
-        ->get()->toArray();
-
-            foreach ($earnings as $earning) {
-                     sendPushNotification($earning['firbase_token'],"order placed",'Someone hase placed order');
-                }    
-               
             }
-            
         } catch (ValidatorException $e) {
             return $this->sendError($e->getMessage());
         }
 
         return $this->sendResponse($order->toArray(), __('lang.saved_successfully', ['operator' => __('lang.order')]));
     }
-    
-  
+
     /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse|mixed
@@ -271,12 +213,10 @@ class OrderAPIController extends Controller
                 $request->only('user_id', 'order_status_id', 'tax', 'delivery_address_id', 'delivery_fee', 'hint')
             );
             Log::info($input['products']);
-            $product_id;
             foreach ($input['products'] as $productOrder) {
                 $productOrder['order_id'] = $order->id;
                 $amount += $productOrder['price'] * $productOrder['quantity'];
                 $this->productOrderRepository->create($productOrder);
-                $product_id = $productOrder['product_id'];
             }
             $amount += $order->delivery_fee;
             $amountWithTax = $amount + ($amount * $order->tax / 100);
@@ -293,18 +233,6 @@ class OrderAPIController extends Controller
             $this->cartRepository->deleteWhere(['user_id' => $order->user_id]);
 
             Notification::send($order->productOrders[0]->product->market->users, new NewOrder($order));
-            
-                $earnings = DB::table('device_acces_token')
-         ->leftjoin('user_markets','user_markets.user_id','=',
-         'device_acces_token.user_id')
-            ->leftjoin('products','products.market_id','=','user_markets.market_id')
-        ->select('device_acces_token.firbase_token')
-        ->where('products.id', '=', $product_id)
-        ->get()->toArray();
-
-            foreach ($earnings as $earning) {
-                     sendPushNotification($earning['firbase_token'],"order placed",'Someone hase placed order');
-                }  
 
         } catch (ValidatorException $e) {
             return $this->sendError($e->getMessage());
